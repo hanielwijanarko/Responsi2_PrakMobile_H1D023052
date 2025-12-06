@@ -1,4 +1,4 @@
-# Aplikasi Inventaris Komputer Alfaen
+# Aplikasi Inventaris Komputer Haniel
 
 Aplikasi mobile untuk manajemen inventaris komputer yang dibangun menggunakan Flutter dan backend Node.js/Express.
 
@@ -6,14 +6,14 @@ Aplikasi mobile untuk manajemen inventaris komputer yang dibangun menggunakan Fl
 
 | Item | Deskripsi |
 |------|-----------|
-| **Nama** | [Mukhammad Alfaen Fadillah] |
-| **NIM** | [H1D023032] |
-| **Shift Asal** | [B] |
+| **Nama** | [Haniel Wijanarko] |
+| **NIM** | [H1D023052] |
+| **Shift Asal** | [F] |
 | **Shift Baru** | [E] |
 
 ## 🎥 Video Demo
 
-Link video demo aplikasi: [Masukkan link video demo Anda di sini]
+Link video demo aplikasi: [hasil demo]
 
 ## 📱 Fitur Aplikasi
 
@@ -507,286 +507,6 @@ class Inventaris {
 
 ---
 
-## 💻 Penjelasan Kode - Pages
-
-### LoginPage (`lib/pages/login_page.dart`)
-
-```dart
-/// Fungsi login yang dijalankan saat user tap tombol Login
-/// 
-/// Proses:
-///   1. Validasi input (email & password tidak kosong)
-///   2. Set loading state = true (untuk disable button & show loading)
-///   3. Call AuthService.login()
-///   4. Tunggu response dari API
-///   5. Set loading state = false
-///   6. Jika sukses: navigate ke HomePage
-///   7. Jika gagal: tampilkan error SnackBar
-/// 
-/// Error Handling:
-///   - Empty input validation
-///   - Network error
-///   - Invalid credentials
-login() async {
-  if (emailC.text.isEmpty || pwC.text.isEmpty) {
-    _showSnackBar("Email dan password harus diisi");
-    return;
-  }
-
-  setState(() => loading = true);
-  final result = await AuthService.login(emailC.text, pwC.text);
-  setState(() => loading = false);
-
-  if (result["success"]) {
-    _showSnackBar("Login berhasil", isSuccess: true);
-    Future.delayed(const Duration(milliseconds: 500), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
-    });
-  } else {
-    _showSnackBar(result["message"]);
-  }
-}
-```
-
-**Penjelasan:**
-- Validasi input pertama kali sebelum API call
-- `setState()` digunakan untuk update UI (loading indicator)
-- `await` menunggu response dari API (async operation)
-- `Navigator.pushReplacement` navigasi ke HomePage dan hapus LoginPage dari stack
-- Delay 500ms sebelum navigate untuk UX yang lebih baik
-
----
-
-### HomePage (`lib/pages/home_page.dart`)
-
-```dart
-/// Fungsi untuk load/reload data inventaris dari API
-/// 
-/// Dijalankan pada:
-///   - initState() - saat halaman pertama kali dibuat
-///   - Setelah add/edit/delete inventaris
-/// 
-/// Proses:
-///   1. Call InventarisService.getAll()
-///   2. Update futureInventaris variable (trigger FutureBuilder rebuild)
-///   3. FutureBuilder akan menampilkan data inventaris
-void _loadInventaris() {
-  futureInventaris = InventarisService.getAll();
-}
-```
-
-**Penjelasan:**
-- Method ini di-call multiple times untuk refresh data
-- FutureBuilder widget akan otomatis rebuild ketika future berubah
-- Ini adalah pattern untuk handle async data dalam Flutter
-
----
-
-```dart
-/// Fungsi untuk menampilkan dialog konfirmasi sebelum delete
-/// 
-/// Parameters:
-///   - id: ID inventaris yang akan dihapus
-///   - nama: Nama inventaris (untuk ditampilkan di dialog)
-/// 
-/// Proses:
-///   1. Tampilkan AlertDialog dengan pertanyaan konfirmasi
-///   2. User bisa pilih "Batal" atau "Hapus"
-///   3. Jika Hapus: call deleteItem() dari InventarisService
-///   4. Refresh data dan tampilkan success message
-void _deleteConfirmation(int id, String nama) {
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      title: const Text("Hapus Inventaris"),
-      content: Text('Apakah Anda yakin ingin menghapus "$nama"?'),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Batal"),
-        ),
-        TextButton(
-          onPressed: () async {
-            Navigator.pop(context);
-            final result = await InventarisService.deleteItem(id);
-            if (result["success"]) {
-              _showSnackBar(result["message"], isSuccess: true);
-              _loadInventaris();
-              setState(() {});
-            }
-          },
-          child: const Text("Hapus", style: TextStyle(color: Colors.red)),
-        ),
-      ],
-    ),
-  );
-}
-```
-
-**Penjelasan:**
-- AlertDialog menampilkan pertanyaan konfirmasi sebelum delete
-- Callback `onPressed` di tombol Hapus melakukan delete operation
-- `Navigator.pop(context)` menutup dialog sebelum API call
-- `_loadInventaris()` dan `setState(() {})` untuk refresh UI setelah delete
-
----
-
-```dart
-/// Fungsi untuk format angka menjadi format currency Rupiah
-/// 
-/// Parameters:
-///   - value: Integer value yang akan diformat
-/// 
-/// Returns:
-///   - String dengan format "Rp X.XXX.XXX"
-/// 
-/// Contoh:
-///   _formatCurrency(1500000) → "Rp 1.500.000"
-///   _formatCurrency(50000) → "Rp 50.000"
-String _formatCurrency(int value) {
-  return "Rp ${value.toString().replaceAllMapped(
-    RegExp(r'(\d)(?=(\d{3})+(?!\d))'), 
-    (Match m) => '${m[1]}.'
-  )}";
-}
-```
-
-**Penjelasan:**
-- Menggunakan regex untuk menambahkan separator setiap 3 digit
-- RegExp `r'(\d)(?=(\d{3})+(?!\d))'` adalah pattern untuk thousands separator
-- `replaceAllMapped` mengganti setiap match dengan format yang ditambahkan dot
-
----
-
-### AddPage (`lib/pages/add_page.dart`)
-
-```dart
-/// Fungsi untuk menambah inventaris baru
-/// 
-/// Validasi:
-///   - Semua field harus diisi
-/// 
-/// Proses:
-///   1. Validasi input
-///   2. Set loading = true
-///   3. Call InventarisService.create()
-///   4. Jika sukses: return true ke HomePage untuk refresh
-///   5. Jika gagal: tampilkan error message
-addInventaris() async {
-  if (namaC.text.isEmpty || hargaC.text.isEmpty || 
-      jumlahC.text.isEmpty || tanggalC.text.isEmpty) {
-    _showSnackBar("Semua field harus diisi");
-    return;
-  }
-
-  setState(() => loading = true);
-  final result = await InventarisService.create(
-    namaC.text,
-    int.parse(hargaC.text),
-    int.parse(jumlahC.text),
-    tanggalC.text,
-  );
-  setState(() => loading = false);
-
-  if (result["success"]) {
-    Navigator.pop(context, true);
-  } else {
-    _showSnackBar(result["message"]);
-  }
-}
-```
-
-**Penjelasan:**
-- Input validation dilakukan sebelum API call
-- `int.parse()` mengkonversi String dari TextField menjadi Integer
-- `Navigator.pop(context, true)` menutup page dan return true sebagai signal sukses
-- HomePage akan menerima return value dan melakukan refresh
-
----
-
-```dart
-/// Fungsi untuk membuka date picker calendar
-/// 
-/// Proses:
-///   1. Tampilkan native date picker dialog
-///   2. User pilih tanggal
-///   3. Format tanggal ke "YYYY-MM-DD"
-///   4. Set value ke TextEditingController tanggalC
-/// 
-/// Usage:
-///   - User tap pada TextField atau tap icon calendar
-Future<void> _selectDate() async {
-  final DateTime? picked = await showDatePicker(
-    context: context,
-    initialDate: DateTime.now(),
-    firstDate: DateTime(2000),
-    lastDate: DateTime.now(),
-  );
-  if (picked != null) {
-    tanggalC.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-  }
-}
-```
-
-**Penjelasan:**
-- `showDatePicker()` adalah native Flutter widget untuk date selection
-- `initialDate: DateTime.now()` set tanggal awal ke hari ini
-- `lastDate: DateTime.now()` membatasi user hanya bisa pilih tanggal di masa lalu
-- `padLeft(2, '0')` memastikan month dan day selalu 2 digit (01-12, 01-31)
-
----
-
-### EditPage (`lib/pages/edit_page.dart`)
-
-```dart
-/// Fungsi untuk update inventaris
-/// 
-/// Perbedaan dengan AddPage:
-///   - TextEditingController di-initialize dengan nilai lama (di initState)
-///   - API endpoint adalah PUT bukan POST
-///   - Pass widget.inventaris.id sebagai parameter
-/// 
-/// Proses:
-///   1. Validasi input
-///   2. Call InventarisService.update()
-///   3. Jika sukses: return true ke HomePage
-///   4. Jika gagal: tampilkan error
-updateInventaris() async {
-  if (namaC.text.isEmpty || hargaC.text.isEmpty || 
-      jumlahC.text.isEmpty || tanggalC.text.isEmpty) {
-    _showSnackBar("Semua field harus diisi");
-    return;
-  }
-
-  setState(() => loading = true);
-  final result = await InventarisService.update(
-    widget.inventaris.id,
-    namaC.text,
-    int.parse(hargaC.text),
-    int.parse(jumlahC.text),
-    tanggalC.text,
-  );
-  setState(() => loading = false);
-
-  if (result["success"]) {
-    Navigator.pop(context, true);
-  } else {
-    _showSnackBar(result["message"]);
-  }
-}
-```
-
-**Penjelasan:**
-- `widget.inventaris` adalah parameter yang diterima dari HomePage
-- Pre-fill form dengan nilai lama memudahkan user untuk edit sebagian field
-- Pass ID inventaris ke API agar tahu mana yang di-update
-
----
-
 ## 🛠️ Teknologi yang Digunakan
 
 ### Frontend (Mobile)
@@ -798,7 +518,6 @@ updateInventaris() async {
 ### Backend
 - **Runtime**: Node.js
 - **Framework**: Express.js
-- **Database**: [Sesuai dengan backend Anda]
 - **Port**: 3000
 
 ### Design & Styling
@@ -843,7 +562,7 @@ lib/
 
 1. **Clone/Setup Project**
    ```bash
-   cd responsi_2_mobile_paket_1_h1d023032
+   cd responsi_2_mobile_paket_1_h1d023052
    ```
 
 2. **Install Dependencies**
@@ -884,5 +603,5 @@ lib/
 
 ## 👨‍💻 Dibuat oleh
 
-[Nama Anda] - [Shift Anda]
+[Haniel Wijanarko] - [Shift F]
 
