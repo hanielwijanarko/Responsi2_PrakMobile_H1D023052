@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Inventaris Komputer Alfaen",
+      title: "Inventaris Komputer Haniel",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -72,4 +72,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

@@ -87,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  "Inventaris Komputer Alfaen",
+                  "Inventaris Komputer Haniel",
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 14,

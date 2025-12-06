@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.responsi_2_mobile_paket_1_h1d023032"
+    namespace = "com.example.responsi_2_mobile_paket_1_h1d023052"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.responsi_2_mobile_paket_1_h1d023032"
+        applicationId = "com.example.responsi_2_mobile_paket_1_h1d023052"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
